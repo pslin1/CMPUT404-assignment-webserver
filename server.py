@@ -44,7 +44,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
 
 	def build_200(self, requested_path):
 		status = "HTTP/1.0 200 OK\r\n"
-		content_type = "text/html"
+		content_type = "Content-Type: text/html\r\n"
 		connection = "Connection: close\r\n"
 		content = open(requested_path, "r").read()
 
@@ -55,7 +55,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
 	def handle(self):
 		self.data = self.request.recv(1024).strip()
 		print ("Got a request of: %s\n" % self.data)
-		self.request.sendall(bytearray("OK",'utf-8'))
+		#self.request.sendall(bytearray("OK",'utf-8'))
 		#self.request.sendall()
 
 		#Parse self.data here, check what it is getting
@@ -66,7 +66,8 @@ class MyWebServer(socketserver.BaseRequestHandler):
 		#This is the content that the user wants
 		self.requested_content = self.split_data[1]
 		#This is so http://127.0.0.1/index.html and http://127.0.0.1/ both give 200 OK
-		if self.requested_content == "/":
+		#FIX: Now works with all directories, not just root
+		if self.requested_content.endswith("/"):
 			self.requested_content = self.requested_content + "index.html"
 
 		if self.split_data[0] == "b'GET":
@@ -79,6 +80,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
 			self.current_directory = os.getcwd()
 			
 			self.requested_path = self.current_directory + "/www" + self.requested_content
+
 			self.exists = os.path.isfile(self.requested_path)
 
 			if self.exists:
