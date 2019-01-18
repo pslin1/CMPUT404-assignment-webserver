@@ -44,8 +44,14 @@ class MyWebServer(socketserver.BaseRequestHandler):
 
 	def build_200(self, requested_path):
 		status = "HTTP/1.0 200 OK\r\n"
-		content_type = "Content-Type: text/html\r\n"
-		connection = "Connection: close\r\n"
+		if requested_path.endswith(".html"):
+			content_type = "Content-Type: text/html\r\n"
+		elif requested_path.endswith(".css"):
+			print("CSS requested")
+			content_type = "Content-Type: text/css\r\n"
+		#IMPORTANT: the double \r\n at the end is crucial to base.css being requsted, 
+		#if it is one \r\n there will be no GET request for the CSS file
+		connection = "Connection: close\r\n\r\n"
 		content = open(requested_path, "r").read()
 
 		byte_form = bytearray(status + content_type + connection + content, 'utf-8')
