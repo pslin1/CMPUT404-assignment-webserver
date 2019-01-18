@@ -1,5 +1,7 @@
+#!/usr/bin/env python3
 #  coding: utf-8 
 import socketserver
+import os
 
 # Copyright 2013 Abram Hindle, Eddie Antonio Santos
 # 
@@ -28,19 +30,85 @@ import socketserver
 
 
 class MyWebServer(socketserver.BaseRequestHandler):
-    
-    def handle(self):
-        self.data = self.request.recv(1024).strip()
-        print ("Got a request of: %s\n" % self.data)
-        self.request.sendall(bytearray("OK",'utf-8'))
+
+	def build_301(self, redirect):
+		print("yes 301")
+		status = "HTTP/1.0 301 Moved Permanently\r\n"
+		connection = "Connection: close\r\n"
+
+		location = "Location: http://127.0.0.1:8080" + redirect + "/index.html\r\n"
+
+		byte_form = bytearray(status + connection + location, 'utf-8')
+
+		self.request.sendall(byte_form)
+
+	def build_200(self, requested_path):
+		status = "HTTP/1.0 200 OK\r\n"
+		content_type = "text/html"
+		connection = "Connection: close\r\n"
+		content = open(requested_path, "r").read()
+
+		byte_form = bytearray(status + content_type + connection + content, 'utf-8')
+
+		self.request.sendall(byte_form)
+
+	def handle(self):
+		self.data = self.request.recv(1024).strip()
+		print ("Got a request of: %s\n" % self.data)
+		self.request.sendall(bytearray("OK",'utf-8'))
+		#self.request.sendall()
+
+		#Parse self.data here, check what it is getting
+		self.split_data = str(self.data).split(" ")
+		#for item in self.parsed_data:
+			#print(item + "\n")
+
+		#This is the content that the user wants
+		self.requested_content = self.split_data[1]
+		#This is so http://127.0.0.1/index.html and http://127.0.0.1/ both give 200 OK
+		if self.requested_content == "/":
+			self.requested_content = self.requested_content + "index.html"
+
+		if self.split_data[0] == "b'GET":
+			#Check if client is trying to get to http://127.0.0.1/deep
+			#if so, 301 redirect to http://127.0.0.1/deep/index.html
+			if self.split_data[1] in ["/deep"]:
+				#Handle 301
+				self.build_301(self.split_data[1])
+
+			self.current_directory = os.getcwd()
+			
+			self.requested_path = self.current_directory + "/www" + self.requested_content
+			self.exists = os.path.isfile(self.requested_path)
+
+			if self.exists:
+				#Handle 200
+				self.build_200(self.requested_path)
+
+			#print(self.current_directory)
+
+			#else:
+				#DO 404 HERE
+
+
+		#else:
+			#DO 405 HERE
+
+		#301, 404 handler
+		#GET / is a 302 redirect
+
+		#handle 200 here
+
+		#construct response and self.request.sendall() it
+
 
 if __name__ == "__main__":
-    HOST, PORT = "localhost", 8080
+	HOST, PORT = "localhost", 8080
 
-    socketserver.TCPServer.allow_reuse_address = True
-    # Create the server, binding to localhost on port 8080
-    server = socketserver.TCPServer((HOST, PORT), MyWebServer)
+	socketserver.TCPServer.allow_reuse_address = True
+	# Create the server, binding to localhost on port 8080
+	server = socketserver.TCPServer((HOST, PORT), MyWebServer)
 
-    # Activate the server; this will keep running until you
-    # interrupt the program with Ctrl-C
-    server.serve_forever()
+	# Activate the server; this will keep running until you
+	# interrupt the program with Ctrl-C
+	server.serve_forever()
