@@ -35,18 +35,18 @@ class MyWebServer(socketserver.BaseRequestHandler):
 	def build_301(self, redirect):
 		#print("yes 301")
 		status = "HTTP/1.0 301 Moved Permanently\r\n"
-		date_info = str(datetime.datetime.now()) + "\r\n"
+		#date_info = str(datetime.datetime.now()) + "\r\n"
 		connection = "Connection: close\r\n"
 
 		location = "Location: http://127.0.0.1:8080" + redirect + "/index.html\r\n"
 
-		byte_form = bytearray(status + date_info + connection + location, 'utf-8')
+		byte_form = bytearray(status + connection + location, 'utf-8')
 
 		self.request.sendall(byte_form)
 
 	def build_200(self, requested_path):
 		status = "HTTP/1.0 200 OK\r\n"
-		date_info = str(datetime.datetime.now()) + "\r\n"
+		#date_info = str(datetime.datetime.now()) + "\r\n"
 		if requested_path.endswith(".html"):
 			content_type = "Content-Type: text/html\r\n"
 		elif requested_path.endswith(".css"):
@@ -55,11 +55,32 @@ class MyWebServer(socketserver.BaseRequestHandler):
 		#IMPORTANT: the double \r\n at the end is crucial to base.css being requsted, 
 		#if it is one \r\n there will be no GET request for the CSS file
 		connection = "Connection: close\r\n\r\n"
+		#Content always has to go last, whatever before has to be \r\n\r\n
 		content = open(requested_path, "r").read()
 
-		print(date_info)
+		#print(date_info)
 
-		byte_form = bytearray(status + date_info + content_type + connection + content, 'utf-8')
+		byte_form = bytearray(status + content_type + connection + content, 'utf-8')
+
+		self.request.sendall(byte_form)
+
+	def build_404(self):
+		status = "HTTP/1.0 404 Not Found\r\n"
+		#date_info = str(datetime.datetime.now()) + "\r\n"
+		connection = "Connection: close\r\n\r\n"
+		content = "This is a 404 error page"
+
+		byte_form = bytearray(status + connection + content, 'utf-8')
+
+		self.request.sendall(byte_form)
+
+	def build_405(self):
+		status = "HTTP/1.0 405 Method Not Allowed\r\n"
+		#date_info = str(datetime.datetime.now()) + "\r\n"
+		connection = "Connection: close\r\n\r\n"
+		content = "This is a 405 error page"
+
+		byte_form = bytearray(status + connection + content, 'utf-8')
 
 		self.request.sendall(byte_form)
 
@@ -96,16 +117,23 @@ class MyWebServer(socketserver.BaseRequestHandler):
 
 			if self.exists:
 				#Handle 200
-				self.build_200(self.requested_path)
+				#print(self.requested_path)
+				#Try to construct a 202 response
+				try:
+					self.build_200(self.requested_path)
+				#If fails, then content type is NOT .css or .html or one of the approved directories
+				except UnboundLocalError:
+					self.build_404()
 
 			#print(self.current_directory)
 
-			#else:
-				#DO 404 HERE
+			#If requested content does not exist
+			else:
+				self.build_404()
 
-
-		#else:
-			#DO 405 HERE
+		#If not a GET request
+		else:
+			self.build_405()
 
 		#301, 404 handler
 		#GET / is a 302 redirect
