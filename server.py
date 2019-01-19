@@ -2,6 +2,7 @@
 #  coding: utf-8 
 import socketserver
 import os
+import datetime
 
 # Copyright 2013 Abram Hindle, Eddie Antonio Santos
 # 
@@ -32,29 +33,33 @@ import os
 class MyWebServer(socketserver.BaseRequestHandler):
 
 	def build_301(self, redirect):
-		print("yes 301")
+		#print("yes 301")
 		status = "HTTP/1.0 301 Moved Permanently\r\n"
+		date_info = str(datetime.datetime.now()) + "\r\n"
 		connection = "Connection: close\r\n"
 
 		location = "Location: http://127.0.0.1:8080" + redirect + "/index.html\r\n"
 
-		byte_form = bytearray(status + connection + location, 'utf-8')
+		byte_form = bytearray(status + date_info + connection + location, 'utf-8')
 
 		self.request.sendall(byte_form)
 
 	def build_200(self, requested_path):
 		status = "HTTP/1.0 200 OK\r\n"
+		date_info = str(datetime.datetime.now()) + "\r\n"
 		if requested_path.endswith(".html"):
 			content_type = "Content-Type: text/html\r\n"
 		elif requested_path.endswith(".css"):
-			print("CSS requested")
+			#print("CSS requested")
 			content_type = "Content-Type: text/css\r\n"
 		#IMPORTANT: the double \r\n at the end is crucial to base.css being requsted, 
 		#if it is one \r\n there will be no GET request for the CSS file
 		connection = "Connection: close\r\n\r\n"
 		content = open(requested_path, "r").read()
 
-		byte_form = bytearray(status + content_type + connection + content, 'utf-8')
+		print(date_info)
+
+		byte_form = bytearray(status + date_info + content_type + connection + content, 'utf-8')
 
 		self.request.sendall(byte_form)
 
