@@ -23,3 +23,17 @@ examples thus some of the code is Copyright © 2001-2013 Python
 Software Foundation; All Rights Reserved under the PSF license (GPL
 compatible) http://docs.python.org/2/library/socketserver.html
 
+
+Collaboraters: 
+Participants on class forum
+
+External Source code used:
+https://stackoverflow.com/a/10114266 (Building HTTP Response)
+https://www.tutorialspoint.com/python/string_endswith.htm (.endswith() documentation)
+https://www.w3schools.com/python/ref_string_split.asp (How to split a string)
+https://therenegadecoder.com/code/how-to-check-if-a-file-exists-in-python/ (how to tell if a file exists)
+
+References used:
+https://emalsha.wordpress.com/2016/11/24/how-create-http-server-using-python-socket-part-ii/
+https://www.webnots.com/what-is-http/
+
