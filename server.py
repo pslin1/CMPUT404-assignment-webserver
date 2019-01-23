@@ -45,8 +45,9 @@ class MyWebServer(socketserver.BaseRequestHandler):
 
 
 	def build_200(self, requested_path):
-		#Credit: toriningen (username)
+		#Credit: toriningen (https://stackoverflow.com/users/472695/toriningen)
 		# https://stackoverflow.com/a/10114266
+		#Date accessed: Jan 18, 2019
 		status = "HTTP/1.0 200 OK\r\n"
 		# https://www.tutorialspoint.com/python/string_endswith.htm
 		if requested_path.endswith(".html"):
@@ -108,8 +109,9 @@ class MyWebServer(socketserver.BaseRequestHandler):
 				#Handle 301
 				self.build_301(self.split_data[1])
 
-			# Credit: Jeremy Grifski
+			# Credit: Jeremy Grifski (https://therenegadecoder.com/author/jeremy-grifski/)
 			# https://therenegadecoder.com/code/how-to-check-if-a-file-exists-in-python/
+			# Date accessed: Jan 18, 2019
 			self.current_directory = os.getcwd()
 			
 			self.requested_path = self.current_directory + "/www" + self.requested_content
